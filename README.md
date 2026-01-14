@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./public/assets/BlockMarketLogo.png" alt="BlockMarket Logo" width="120" />
+  <img src="assets/BlockMarketLogo.png" alt="BlockMarket Logo" width="120" />
   
   # 🚀 BlockMarket (Testnet)
 </div>
