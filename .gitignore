@@ -17,6 +17,8 @@ dist-ssr
 
 # Assets (moved to public/assets)
 BlockMarketLogo.png
+# Allow logo in assets folder for README
+!assets/BlockMarketLogo.png
 
 # Editor directories and files
 .vscode/*
