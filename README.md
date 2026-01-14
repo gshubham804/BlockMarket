@@ -1,4 +1,8 @@
-# 🚀 BlockMarket (Testnet)
+<div align="center">
+  <img src="./public/assets/BlockMarketLogo.png" alt="BlockMarket Logo" width="120" />
+  
+  # 🚀 BlockMarket (Testnet)
+</div>
 
 **BlockMarket** is a **testnet-only Ethereum application** that combines a **blockspace marketplace** with a **gasless transaction execution layer**.
 
