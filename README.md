@@ -45,7 +45,7 @@ The app provides:
   - blockspace reservation
   - transaction submission
 - Clear execution timeline:
-Submitted → Reserved → Preconfirmed → Included
+  **Submitted → Reserved → Preconfirmed → Included**
 
 ---
 
@@ -82,8 +82,8 @@ BlockMarket supports **two modes** in a single application:
 
 ## 🏗️ High-Level Architecture
 
-```txt
-Frontend (React 19)
+```
+Frontend (React + TypeScript)
 │
 │ REST / WebSocket
 ▼
@@ -92,60 +92,74 @@ Backend (Coordination Layer)
 │ ETHGas Testnet APIs
 ▼
 Ethereum Testnet
-Why a Backend is Required
+```
+
+### Why a Backend is Required
 
 Even on testnet, a backend is needed to:
 
-Coordinate gasless execution
+- Coordinate gasless execution
+- Track blockspace commitment lifecycle
+- Prevent double usage of commitments
+- Cache market data
+- Track transaction states
 
-Track blockspace commitment lifecycle
+**The backend:**
+- ❌ Does NOT custody funds
+- ❌ Does NOT sign transactions on behalf of users
+- ❌ Does NOT interact with mainnet
 
-Prevent double usage of commitments
+### 🧪 Testnet Only
 
-Cache market data
+- All transactions use testnet ETH
+- Uses ETHGas testnet endpoints
+- No real economic value
+- No production guarantees
 
-Track transaction states
+> This project is for education and experimentation only.
 
-The backend:
+---
 
-❌ Does NOT custody funds
+## 🛠️ Tech Stack
 
-❌ Does NOT sign transactions on behalf of users
+### Frontend
 
-❌ Does NOT interact with mainnet
+<div align="center">
 
-🧪 Testnet Only
+![React](https://img.shields.io/badge/React-18.3.1-61DAFB?style=for-the-badge&logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.6.3-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-5.4.2-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.1.18-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![pnpm](https://img.shields.io/badge/pnpm-10.28.0-F69220?style=for-the-badge&logo=pnpm&logoColor=white)
 
-All transactions use testnet ETH
+</div>
 
-Uses ETHGas testnet endpoints
+- **React 19** - UI framework
+- **TypeScript** - Type safety
+- **Vite** - Build tool and dev server
+- **Tailwind CSS v4** - Utility-first CSS framework
+- **pnpm** - Package manager
+- **Wallet integration** - MetaMask / WalletConnect
 
-No real economic value
+### Backend (Minimal)
 
-No production guarantees
+<div align="center">
 
-This project is for education and experimentation only.
+![Node.js](https://img.shields.io/badge/Node.js-LTS-339933?style=for-the-badge&logo=node.js&logoColor=white)
+![REST API](https://img.shields.io/badge/REST_API-FF6B6B?style=for-the-badge&logo=rest&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
 
-🛠️ Tech Stack
-Frontend
+</div>
 
-React 19
+- **Node.js** - Runtime environment
+- **REST APIs** - API architecture
+- **Lightweight DB** - SQLite / PostgreSQL
 
-Tailwind CSS
+---
 
-pnpm
+## 📁 Project Structure
 
-Wallet integration (MetaMask / WalletConnect)
-
-Backend (Minimal)
-
-Node.js
-
-REST APIs
-
-Lightweight DB (SQLite / PostgreSQL)
-
-📁 Example Frontend Structure
+```
 src/
   pages/
     index.tsx          // Landing
@@ -163,38 +177,57 @@ src/
   lib/
     api.ts             // Backend API client
     eth.ts             // Ethereum helpers
-🧪 Getting Started (Frontend)
+```
+
+---
+
+## 🧪 Getting Started
+
+### Frontend Setup
+
+```bash
+# Install dependencies
 pnpm install
+
+# Start development server
 pnpm dev
-Requirements:
 
-Wallet connected to Ethereum testnet
+# Build for production
+pnpm build
 
-Backend service running
+# Preview production build
+pnpm preview
+```
 
-Environment variables configured
-📌 Non-Goals
+### Requirements
 
-❌ Mainnet support
+- Wallet connected to Ethereum testnet
+- Backend service running
+- Environment variables configured
 
-❌ Custodial wallets
+---
 
-❌ Validator or consensus logic
+## 📌 Non-Goals
 
-❌ Full exchange order matching
+- ❌ Mainnet support
+- ❌ Custodial wallets
+- ❌ Validator or consensus logic
+- ❌ Full exchange order matching
+- ❌ Real fund handling
 
-❌ Real fund handling
-🧠 Purpose of This Project
+---
+
+## 🧠 Purpose of This Project
 
 BlockMarket is designed to:
 
-Explore blockspace as a product
+- Explore blockspace as a product
+- Demonstrate gas abstraction patterns
+- Showcase system-level Web3 thinking
+- Serve as a portfolio-grade infrastructure project
 
-Demonstrate gas abstraction patterns
+---
 
-Showcase system-level Web3 thinking
-
-Serve as a portfolio-grade infrastructure project
-📜 License
+## 📜 License
 
 MIT

@@ -3,12 +3,12 @@ function App() {
     <div className="min-h-screen bg-[#0B0B0D] text-[#F5F6FA]">
       {/* Navigation */}
       <nav className="border-b border-[#1E1E22] bg-[#0B0B0D]">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="max-w-7xl mx-auto py-4 flex items-center justify-between">
+          <div className="flex items-center gap-0">
             <img 
               src="/assets/BlockMarketLogo.png" 
               alt="BlockMarket" 
-              className="h-8 w-8"
+              className="h-12 w-12"
             />
             <span className="text-xl font-bold text-[#F5F6FA]">BlockMarket</span>
           </div>
@@ -31,11 +31,11 @@ function App() {
               <img 
                 src="/assets/BlockMarketLogo.png" 
                 alt="BlockMarket Logo" 
-                className="h-24 w-24"
+                className="h-auto w-60"
               />
             </div>
             <h1 className="text-5xl lg:text-7xl font-bold text-[#F5F6FA] mb-6 leading-tight">
-              Blockspace as a
+              Blockmarket as a
               <span className="text-[#E10600]"> Product</span>
             </h1>
             <p className="text-xl lg:text-2xl text-[#C9CCD3] mb-8 leading-relaxed">
@@ -275,13 +275,13 @@ function App() {
       <footer className="py-8 bg-[#0B0B0D] border-t border-[#1E1E22]">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-0">
               <img 
                 src="/assets/BlockMarketLogo.png" 
                 alt="BlockMarket" 
-                className="h-6 w-6"
+                className="h-12 w-12"
               />
-              <span className="text-[#F5F6FA] font-semibold">BlockMarket</span>
+              <span className="text-[#F5F6FA] text-lg font-semibold">BlockMarket</span>
             </div>
             <p className="text-sm text-[#6B6F78]">
               MIT License • Testnet Only • For Educational Purposes
