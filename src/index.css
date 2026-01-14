@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+:root {
+  /* Primary Reds */
+  --red-primary: #E10600;
+  --red-dark: #9B0500;
+  
+  /* Core Blacks */
+  --black: #0B0B0D;
+  --black-soft: #131316;
+  --black-border: #1E1E22;
+  
+  /* Metallic Grays */
+  --gray-metal: #C9CCD3;
+  --gray-dark: #6B6F78;
+  
+  /* Highlight White */
+  --white-soft: #F5F6FA;
+}
+
+/* Base styles */
+body {
+  background-color: var(--black);
+  color: var(--white-soft);
+}
+
+/* Custom shadow utilities */
+.shadow-card {
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.shadow-red-glow {
+  box-shadow:
+    0 0 18px rgba(225, 6, 0, 0.45),
+    0 6px 20px rgba(0, 0, 0, 0.6);
+}
+
+.shadow-deep-3d {
+  box-shadow:
+    0 18px 60px rgba(0, 0, 0, 0.75),
+    0 2px 8px rgba(0, 0, 0, 0.9);
+}
+
+.shadow-button-3d {
+  box-shadow:
+    0 6px 0 #9B0500,
+    0 10px 20px rgba(0, 0, 0, 0.6);
+}
+
+.shadow-button-3d:active {
+  transform: translateY(2px);
+  box-shadow:
+    0 3px 0 #9B0500,
+    0 6px 12px rgba(0, 0, 0, 0.7);
+}
