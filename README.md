@@ -1,6 +1,6 @@
 <div align="center">
   
-  ![BlockMarket Logo](assets/BlockMarketLogo.png)
+  ![BlockMarket Logo](Frontend/assets/BlockMarketLogo.png)
   
   # 🚀 BlockMarket (Testnet)
 </div>
