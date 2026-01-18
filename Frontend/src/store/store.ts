@@ -1,25 +1,24 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { persistStore, persistReducer, FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER } from 'redux-persist'
 import storage from 'redux-persist/lib/storage/session'
-import walletReducer from './walletSlice'
+import authReducer from './authSlice'
 
-const walletPersistConfig = {
-  key: 'wallet',
+const authPersistConfig = {
+  key: 'auth',
   storage,
-  whitelist: ['address', 'isConnected'], // Only persist address and isConnected, not provider
+  whitelist: ['user'], // Only persist user, not loading/error states
 }
 
-const persistedWalletReducer = persistReducer(walletPersistConfig, walletReducer)
+const persistedAuthReducer = persistReducer(authPersistConfig, authReducer)
 
 export const store = configureStore({
   reducer: {
-    wallet: persistedWalletReducer,
+    auth: persistedAuthReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
-        ignoredPaths: ['wallet.provider'],
       },
     }),
 })

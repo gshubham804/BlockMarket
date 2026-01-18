@@ -1,13 +1,12 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Provider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
 import { Toaster } from 'react-hot-toast'
 import { store, persistor } from './store/store'
-import LandingPage from './pages/index'
-import ExecutePage from './pages/execute'
-import TradePage from './pages/trade'
+import MarketPage from './pages/market'
+import BuyPage from './pages/buy'
 import PortfolioPage from './pages/portfolio'
-import HistoryPage from './pages/history'
+import LoginPage from './pages/login'
 
 function App() {
   return (
@@ -15,11 +14,11 @@ function App() {
       <PersistGate loading={null} persistor={persistor}>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/execute" element={<ExecutePage />} />
-            <Route path="/trade" element={<TradePage />} />
+            <Route path="/" element={<Navigate to="/market" replace />} />
+            <Route path="/market" element={<MarketPage />} />
+            <Route path="/buy" element={<BuyPage />} />
             <Route path="/portfolio" element={<PortfolioPage />} />
-            <Route path="/history" element={<HistoryPage />} />
+            <Route path="/login" element={<LoginPage />} />
           </Routes>
           <Toaster
             position="top-right"
