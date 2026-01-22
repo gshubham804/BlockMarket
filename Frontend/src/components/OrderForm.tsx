@@ -16,19 +16,27 @@ export default function OrderForm({
   onOrderPlaced,
 }: OrderFormProps) {
   const [side, setSide] = useState<'buy' | 'sell'>('buy')
-  const [blockStart, setBlockStart] = useState<string>('')
-  const [blockEnd, setBlockEnd] = useState<string>('')
+  const [instrumentId, setInstrumentId] = useState<string>('')
   const [price, setPrice] = useState<string>('')
-  const [quantity, setQuantity] = useState<string>('')
+  const [quantity, setQuantity] = useState<string>('1')
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (prefilledMarket) {
-      setBlockStart(String(prefilledMarket.blockRange?.start || prefilledMarket.start || ''))
-      setBlockEnd(String(prefilledMarket.blockRange?.end || prefilledMarket.end || ''))
+      // Construct Instrument ID from slot if available
+      // Use provided Instrument ID or construct it
+      if (prefilledMarket.instrumentId) {
+        setInstrumentId(prefilledMarket.instrumentId)
+      } else {
+        const slot = prefilledMarket.slot || prefilledMarket.blockRange?.start || prefilledMarket.start
+        if (slot) {
+          setInstrumentId(marketType === 'wholeblock' ? `ETH-WB-${slot}` : `ETH-PC-${slot}`)
+        }
+      }
+
       setPrice(prefilledMarket.price || '')
     }
-  }, [prefilledMarket])
+  }, [prefilledMarket, marketType])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -38,12 +46,9 @@ export default function OrderForm({
       await api.placeOrder({
         marketType,
         side,
-        blockRange: {
-          start: parseInt(blockStart),
-          end: parseInt(blockEnd),
-        },
+        instrumentId,
         price,
-        quantity: quantity || undefined,
+        quantity,
       })
 
       onOrderPlaced()
@@ -65,22 +70,20 @@ export default function OrderForm({
           <button
             type="button"
             onClick={() => onMarketTypeChange('wholeblock')}
-            className={`px-4 py-2 rounded font-medium transition-colors ${
-              marketType === 'wholeblock'
-                ? 'bg-[#E10600] text-[#F5F6FA]'
-                : 'bg-[#0B0B0D] text-[#C9CCD3] border border-[#1E1E22] hover:border-[#E10600]'
-            }`}
+            className={`px-4 py-2 rounded font-medium transition-colors ${marketType === 'wholeblock'
+              ? 'bg-[#E10600] text-[#F5F6FA]'
+              : 'bg-[#0B0B0D] text-[#C9CCD3] border border-[#1E1E22] hover:border-[#E10600]'
+              }`}
           >
             Whole Block
           </button>
           <button
             type="button"
             onClick={() => onMarketTypeChange('inclusion-preconf')}
-            className={`px-4 py-2 rounded font-medium transition-colors ${
-              marketType === 'inclusion-preconf'
-                ? 'bg-[#E10600] text-[#F5F6FA]'
-                : 'bg-[#0B0B0D] text-[#C9CCD3] border border-[#1E1E22] hover:border-[#E10600]'
-            }`}
+            className={`px-4 py-2 rounded font-medium transition-colors ${marketType === 'inclusion-preconf'
+              ? 'bg-[#E10600] text-[#F5F6FA]'
+              : 'bg-[#0B0B0D] text-[#C9CCD3] border border-[#1E1E22] hover:border-[#E10600]'
+              }`}
           >
             Inclusion Preconf
           </button>
@@ -96,82 +99,54 @@ export default function OrderForm({
           <button
             type="button"
             onClick={() => setSide('buy')}
-            className={`px-4 py-2 rounded font-medium transition-colors ${
-              side === 'buy'
-                ? 'bg-[#E10600] text-[#F5F6FA]'
-                : 'bg-[#0B0B0D] text-[#C9CCD3] border border-[#1E1E22] hover:border-[#E10600]'
-            }`}
+            className={`px-4 py-2 rounded font-medium transition-colors ${side === 'buy'
+              ? 'bg-[#E10600] text-[#F5F6FA]'
+              : 'bg-[#0B0B0D] text-[#C9CCD3] border border-[#1E1E22] hover:border-[#E10600]'
+              }`}
           >
             Buy
           </button>
           <button
             type="button"
             onClick={() => setSide('sell')}
-            className={`px-4 py-2 rounded font-medium transition-colors ${
-              side === 'sell'
-                ? 'bg-[#E10600] text-[#F5F6FA]'
-                : 'bg-[#0B0B0D] text-[#C9CCD3] border border-[#1E1E22] hover:border-[#E10600]'
-            }`}
+            className={`px-4 py-2 rounded font-medium transition-colors ${side === 'sell'
+              ? 'bg-[#E10600] text-[#F5F6FA]'
+              : 'bg-[#0B0B0D] text-[#C9CCD3] border border-[#1E1E22] hover:border-[#E10600]'
+              }`}
           >
             Sell
           </button>
         </div>
       </div>
 
-      {/* Block Range */}
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-[#C9CCD3] mb-2">
-            Block Start
-          </label>
-          <input
-            type="number"
-            value={blockStart}
-            onChange={(e) => setBlockStart(e.target.value)}
-            required
-            className="w-full px-4 py-3 bg-[#0B0B0D] border border-[#1E1E22] rounded-lg text-[#F5F6FA] placeholder-[#6B6F78] focus:outline-none focus:border-[#E10600] transition-colors"
-            placeholder="18500000"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-[#C9CCD3] mb-2">
-            Block End
-          </label>
-          <input
-            type="number"
-            value={blockEnd}
-            onChange={(e) => setBlockEnd(e.target.value)}
-            required
-            className="w-full px-4 py-3 bg-[#0B0B0D] border border-[#1E1E22] rounded-lg text-[#F5F6FA] placeholder-[#6B6F78] focus:outline-none focus:border-[#E10600] transition-colors"
-            placeholder="18500010"
-          />
-        </div>
-      </div>
-
-      {/* Price */}
+      {/* Instrument ID */}
       <div>
         <label className="block text-sm font-medium text-[#C9CCD3] mb-2">
-          Price (ETH)
+          Instrument ID
         </label>
         <input
           type="text"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
+          value={instrumentId}
+          onChange={(e) => setInstrumentId(e.target.value)}
           required
           className="w-full px-4 py-3 bg-[#0B0B0D] border border-[#1E1E22] rounded-lg text-[#F5F6FA] placeholder-[#6B6F78] focus:outline-none focus:border-[#E10600] transition-colors"
-          placeholder="0.05"
+          placeholder={marketType === 'wholeblock' ? "ETH-WB-18500000" : "ETH-PC-18500000"}
         />
       </div>
 
-      {/* Quantity (Optional) */}
+
+
+
+      {/* Quantity */}
       <div>
         <label className="block text-sm font-medium text-[#C9CCD3] mb-2">
-          Quantity (Optional)
+          Quantity
         </label>
         <input
           type="text"
           value={quantity}
           onChange={(e) => setQuantity(e.target.value)}
+          required
           className="w-full px-4 py-3 bg-[#0B0B0D] border border-[#1E1E22] rounded-lg text-[#F5F6FA] placeholder-[#6B6F78] focus:outline-none focus:border-[#E10600] transition-colors"
           placeholder="1"
         />

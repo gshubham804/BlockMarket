@@ -4,7 +4,7 @@ import MarketTable from '../components/MarketTable'
 import api from '../lib/api'
 import { WholeBlockMarket, PreconfMarket } from '../types'
 
-type MarketType = 'wholeblock' | 'preconf'
+type MarketType = 'wholeblock' | 'inclusion-preconf'
 
 export default function MarketPage() {
   const [activeTab, setActiveTab] = useState<MarketType>('wholeblock')
@@ -68,9 +68,9 @@ export default function MarketPage() {
             onClick={() => {
               setMarketData([])
               setLoading(true)
-              setActiveTab('preconf')
+              setActiveTab('inclusion-preconf')
             }}
-            className={`px-6 py-3 font-medium transition-colors border-b-2 ${activeTab === 'preconf'
+            className={`px-6 py-3 font-medium transition-colors border-b-2 ${activeTab === 'inclusion-preconf'
               ? 'border-[#E10600] text-[#E10600]'
               : 'border-transparent text-[#C9CCD3] hover:text-[#F5F6FA]'
               }`}

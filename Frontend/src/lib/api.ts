@@ -4,8 +4,8 @@
  * All API calls go through our backend - never directly to ETHGas
  */
 
-// const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://blockmarket.onrender.com'
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+// const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://blockmarket.onrender.com'
 
 class ApiClient {
   private baseURL: string
@@ -160,9 +160,9 @@ class ApiClient {
   async placeOrder(orderData: {
     marketType: 'wholeblock' | 'inclusion-preconf'
     side: 'buy' | 'sell'
-    blockRange: { start: number; end: number }
+    instrumentId: string
     price: string
-    quantity?: string
+    quantity: string
   }) {
     return this.request<{ order: any }>('/orders/place', {
       method: 'POST',

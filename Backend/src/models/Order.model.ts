@@ -4,12 +4,9 @@ import { z } from 'zod'
 export const PlaceOrderSchema = z.object({
   marketType: z.enum(['wholeblock', 'inclusion-preconf']),
   side: z.enum(['buy', 'sell']),
-  blockRange: z.object({
-    start: z.number(),
-    end: z.number(),
-  }),
+  instrumentId: z.string(),
   price: z.string(),
-  quantity: z.string().optional(),
+  quantity: z.string(),
 })
 
 export type PlaceOrderInput = z.infer<typeof PlaceOrderSchema>
@@ -23,12 +20,10 @@ export interface IOrder extends Document {
   ethgasOrderId?: string // ETHGas order ID
   marketType: MarketType
   side: OrderSide
-  blockRange: {
-    start: number
-    end: number
-  }
+  instrumentId: string
+  clientOrderId: string
   price: string
-  quantity?: string
+  quantity: string
   status: OrderStatus
   filledQuantity?: string
   createdAt: Date
@@ -58,9 +53,15 @@ const OrderSchema = new Schema<IOrder>(
       enum: ['buy', 'sell'],
       required: true,
     },
-    blockRange: {
-      start: { type: Number, required: true },
-      end: { type: Number, required: true },
+    instrumentId: {
+      type: String,
+      required: true,
+      index: true,
+    },
+    clientOrderId: {
+      type: String,
+      required: true,
+      unique: true,
     },
     price: {
       type: String,

@@ -1,5 +1,5 @@
 import axios, { AxiosInstance } from 'axios'
-import env from '../config/env'
+
 import { ETHGasLoginResponse, ETHGasVerifyLoginResponse } from '../types/ethgas'
 
 /**
@@ -50,7 +50,7 @@ class ETHGasClient {
     console.log('  Method: POST')
     console.log('  URL:', `${this.baseURL}${url}`)
     console.log('  Query Params:', { addr: address })
-    
+
     try {
       const response = await this.client.post<ETHGasLoginResponse>(url)
       console.log('✅ ETHGas API Response:')
@@ -77,24 +77,24 @@ class ETHGasClient {
     console.log('🔵 ETHGas API Request:')
     console.log('  Method: POST')
     console.log('  URL:', `${this.baseURL}${url}`)
-    console.log('  Query Params:', { 
-      addr: address, 
-      nonceHash, 
-      signature: `${signature.slice(0, 20)}...` 
+    console.log('  Query Params:', {
+      addr: address,
+      nonceHash,
+      signature: `${signature.slice(0, 20)}...`
     })
-    
+
     try {
       const response = await this.client.post<ETHGasVerifyLoginResponse>(url)
       console.log('✅ ETHGas API Response:')
       console.log('  Status:', response.status)
-      console.log('  Data:', JSON.stringify({ 
-        ...response.data, 
+      console.log('  Data:', JSON.stringify({
+        ...response.data,
         data: response.data?.data ? {
           ...response.data.data,
           accessToken: response.data.data.accessToken?.token ? '***REDACTED***' : response.data.data.accessToken
         } : response.data?.data
       }, null, 2))
-      
+
       // Extract token from response structure
       // ETHGas returns: { success: true, data: { accessToken: { token: "..." }, user: {...} } }
       if (response.data?.success && response.data?.data?.accessToken?.token) {
@@ -103,7 +103,7 @@ class ETHGasClient {
           user: response.data.data.user,
         }
       }
-      
+
       throw new Error('Invalid response structure from ETHGas API')
     } catch (error: any) {
       console.error('❌ ETHGas API Error:')
@@ -122,7 +122,7 @@ class ETHGasClient {
     console.log('  Method: GET')
     console.log('  URL:', `${this.baseURL}/api/v1/user/info`)
     console.log('  Headers:', { Authorization: 'Bearer ***REDACTED***' })
-    
+
     try {
       const response = await this.client.get('/api/v1/user/info')
       console.log('✅ ETHGas API Response:')
@@ -147,7 +147,7 @@ class ETHGasClient {
     console.log('🔵 ETHGas API Request:')
     console.log('  Method: GET')
     console.log('  URL:', `${this.baseURL}/api/v1/p/wholeblock/markets`)
-    
+
     try {
       const response = await this.client.get('/api/v1/p/wholeblock/markets')
       console.log('✅ ETHGas API Response:')
@@ -171,7 +171,7 @@ class ETHGasClient {
     console.log('🔵 ETHGas API Request:')
     console.log('  Method: GET')
     console.log('  URL:', `${this.baseURL}/api/v1/p/inclusion-preconf/markets`)
-    
+
     try {
       const response = await this.client.get('/api/v1/p/inclusion-preconf/markets')
       console.log('✅ ETHGas API Response:')
@@ -195,7 +195,7 @@ class ETHGasClient {
     console.log('🔵 ETHGas API Request:')
     console.log('  Method: GET')
     console.log('  URL:', `${this.baseURL}/api/v1/p/wholeblock/trades`)
-    
+
     try {
       const response = await this.client.get('/api/v1/p/wholeblock/trades')
       console.log('✅ ETHGas API Response:')
@@ -219,7 +219,7 @@ class ETHGasClient {
     console.log('🔵 ETHGas API Request:')
     console.log('  Method: GET')
     console.log('  URL:', `${this.baseURL}/api/v1/p/inclusion-preconf/trades`)
-    
+
     try {
       const response = await this.client.get('/api/v1/p/inclusion-preconf/trades')
       console.log('✅ ETHGas API Response:')
@@ -247,17 +247,30 @@ class ETHGasClient {
     console.log('  URL:', `${this.baseURL}/api/v1/wholeblock/order`)
     console.log('  Body:', JSON.stringify(orderData, null, 2))
     console.log('  Headers:', { Authorization: 'Bearer ***REDACTED***' })
-    
+
     try {
       const response = await this.client.post('/api/v1/wholeblock/order', orderData)
       console.log('✅ ETHGas API Response:')
       console.log('  Status:', response.status)
       console.log('  Data:', JSON.stringify(response.data, null, 2))
+      console.log('  Data:', JSON.stringify(response.data, null, 2))
+
+      // Check for logical failure
+      if (response.data && response.data.success === false) {
+        throw new Error(response.data.errorMsgKey || `ETHGas Error: ${response.data.errorCode}`)
+      }
+
       return response.data
     } catch (error: any) {
       console.error('❌ ETHGas API Error:')
       console.error('  Status:', error.response?.status)
       console.error('  Error:', error.response?.data || error.message)
+
+      // If it's a logical error we threw (has no response object), rethrow it as is
+      if (!error.response) {
+        throw error
+      }
+
       throw new Error(`ETHGas place whole block order failed: ${error.response?.data?.message || error.message}`)
     }
   }
@@ -272,17 +285,30 @@ class ETHGasClient {
     console.log('  URL:', `${this.baseURL}/api/v1/inclusion-preconf/order`)
     console.log('  Body:', JSON.stringify(orderData, null, 2))
     console.log('  Headers:', { Authorization: 'Bearer ***REDACTED***' })
-    
+
     try {
       const response = await this.client.post('/api/v1/inclusion-preconf/order', orderData)
       console.log('✅ ETHGas API Response:')
       console.log('  Status:', response.status)
       console.log('  Data:', JSON.stringify(response.data, null, 2))
+      console.log('  Data:', JSON.stringify(response.data, null, 2))
+
+      // Check for logical failure
+      if (response.data && response.data.success === false) {
+        throw new Error(response.data.errorMsgKey || `ETHGas Error: ${response.data.errorCode}`)
+      }
+
       return response.data
     } catch (error: any) {
       console.error('❌ ETHGas API Error:')
       console.error('  Status:', error.response?.status)
       console.error('  Error:', error.response?.data || error.message)
+
+      // If it's a logical error we threw (has no response object), rethrow it as is
+      if (!error.response) {
+        throw error
+      }
+
       throw new Error(`ETHGas place inclusion preconf order failed: ${error.response?.data?.message || error.message}`)
     }
   }
@@ -296,7 +322,7 @@ class ETHGasClient {
     console.log('  Method: GET')
     console.log('  URL:', `${this.baseURL}/api/v1/user/accounts`)
     console.log('  Headers:', { Authorization: 'Bearer ***REDACTED***' })
-    
+
     try {
       const response = await this.client.get('/api/v1/user/accounts')
       console.log('✅ ETHGas API Response:')
@@ -319,13 +345,13 @@ class ETHGasClient {
   async getUserWholeBlockOrders(accountId?: number): Promise<any> {
     const params = accountId ? { accountId } : {}
     const queryString = accountId ? `?accountId=${accountId}` : ''
-    
+
     console.log('🔵 ETHGas API Request:')
     console.log('  Method: GET')
     console.log('  URL:', `${this.baseURL}/api/v1/user/wholeblock/orders${queryString}`)
     console.log('  Query Params:', params)
     console.log('  Headers:', { Authorization: 'Bearer ***REDACTED***' })
-    
+
     try {
       const response = await this.client.get(`/api/v1/user/wholeblock/orders${queryString}`)
       console.log('✅ ETHGas API Response:')
@@ -348,13 +374,13 @@ class ETHGasClient {
   async getUserInclusionPreconfOrders(accountId?: number): Promise<any> {
     const params = accountId ? { accountId } : {}
     const queryString = accountId ? `?accountId=${accountId}` : ''
-    
+
     console.log('🔵 ETHGas API Request:')
     console.log('  Method: GET')
     console.log('  URL:', `${this.baseURL}/api/v1/user/inclusion-preconf/orders${queryString}`)
     console.log('  Query Params:', params)
     console.log('  Headers:', { Authorization: 'Bearer ***REDACTED***' })
-    
+
     try {
       const response = await this.client.get(`/api/v1/user/inclusion-preconf/orders${queryString}`)
       console.log('✅ ETHGas API Response:')
@@ -374,14 +400,14 @@ class ETHGasClient {
    * POST /api/v1/wholeblock/order/cancel
    * Cancel whole block order (requires auth token)
    */
-  async cancelWholeBlockOrder(orderId: string): Promise<any> {
-    const requestBody = { orderId }
+  async cancelWholeBlockOrder(orderData: any): Promise<any> {
+    const requestBody = orderData
     console.log('🔵 ETHGas API Request:')
     console.log('  Method: POST')
     console.log('  URL:', `${this.baseURL}/api/v1/wholeblock/order/cancel`)
     console.log('  Body:', JSON.stringify(requestBody, null, 2))
     console.log('  Headers:', { Authorization: 'Bearer ***REDACTED***' })
-    
+
     try {
       const response = await this.client.post('/api/v1/wholeblock/order/cancel', requestBody)
       console.log('✅ ETHGas API Response:')
@@ -400,14 +426,14 @@ class ETHGasClient {
    * POST /api/v1/inclusion-preconf/order/cancel
    * Cancel inclusion preconf order (requires auth token)
    */
-  async cancelInclusionPreconfOrder(orderId: string): Promise<any> {
-    const requestBody = { orderId }
+  async cancelInclusionPreconfOrder(orderData: any): Promise<any> {
+    const requestBody = orderData
     console.log('🔵 ETHGas API Request:')
     console.log('  Method: POST')
     console.log('  URL:', `${this.baseURL}/api/v1/inclusion-preconf/order/cancel`)
     console.log('  Body:', JSON.stringify(requestBody, null, 2))
     console.log('  Headers:', { Authorization: 'Bearer ***REDACTED***' })
-    
+
     try {
       const response = await this.client.post('/api/v1/inclusion-preconf/order/cancel', requestBody)
       console.log('✅ ETHGas API Response:')

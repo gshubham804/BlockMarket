@@ -3,7 +3,7 @@ import { WholeBlockMarket, PreconfMarket } from '../types'
 
 interface MarketTableProps {
   data: (WholeBlockMarket | PreconfMarket)[]
-  marketType: 'wholeblock' | 'preconf'
+  marketType: 'wholeblock' | 'inclusion-preconf'
 }
 
 export default function MarketTable({ data, marketType }: MarketTableProps) {
@@ -46,11 +46,11 @@ export default function MarketTable({ data, marketType }: MarketTableProps) {
                       ? (market as WholeBlockMarket).price || '0.00'
                       : (market as PreconfMarket).midPrice || '0.00'} ETH
                   </div>
-                  <div className="text-xs text-[#6B6F78]">Mid: {market.midPrice}</div>
+                  <div className="text-xs text-[#6B6F78]">Mid: {market.midPrice || 0}</div>
                 </div>
               </div>
 
-              {marketType === 'preconf' && (
+              {marketType === 'inclusion-preconf' && (
                 <div className="flex justify-between">
                   <span className="text-[#C9CCD3]">Preconf</span>
                   <div className="text-right text-[#F5F6FA]">
@@ -72,7 +72,10 @@ export default function MarketTable({ data, marketType }: MarketTableProps) {
             <div className="mt-4">
               <Link
                 to="/buy"
-                state={{ marketType, market }}
+                state={{
+                  marketType,
+                  market
+                }}
                 className="block w-full text-center px-4 py-3 bg-[#E10600] hover:bg-[#9B0500] text-[#F5F6FA] text-sm font-medium rounded transition-all shadow-button-3d hover:shadow-red-glow cursor-pointer"
               >
                 Buy
@@ -90,7 +93,7 @@ export default function MarketTable({ data, marketType }: MarketTableProps) {
               <tr className="border-b border-[#1E1E22]">
                 <th className="text-left py-4 px-6 text-sm font-semibold text-[#C9CCD3]">Slot / Name</th>
                 <th className="text-left py-4 px-6 text-sm font-semibold text-[#C9CCD3]">Price (ETH)</th>
-                {marketType === 'preconf' && (
+                {marketType === 'inclusion-preconf' && (
                   <th className="text-left py-4 px-6 text-sm font-semibold text-[#C9CCD3]">Preconf</th>
                 )}
                 <th className="text-left py-4 px-6 text-sm font-semibold text-[#C9CCD3]">Timestamps</th>
@@ -117,11 +120,11 @@ export default function MarketTable({ data, marketType }: MarketTableProps) {
                       ? (market as WholeBlockMarket).price || '0.00000000000'
                       : (market as PreconfMarket).midPrice || '0.00000000000'} ETH
                     <div className="text-xs text-[#6B6F78] font-normal mt-0.5">
-                      Mid: {market.midPrice}
+                      Mid: {market.midPrice || 0}
                     </div>
                   </td>
 
-                  {marketType === 'preconf' && (
+                  {marketType === 'inclusion-preconf' && (
                     <td className="py-4 px-6 text-[#C9CCD3] text-sm">
                       <div>Avail: {(market as PreconfMarket).availablePreconf?.toLocaleString() || '0'}</div>
                       <div className="text-xs text-[#6B6F78]">Total: {(market as PreconfMarket).totalPreconf?.toLocaleString() || '0'}</div>

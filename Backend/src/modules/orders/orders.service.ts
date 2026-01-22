@@ -23,34 +23,79 @@ export class OrdersService {
       throw new AppError(401, 'ETHGas authentication required. Please login again.')
     }
 
-    // Prepare order data for ETHGas API
-    const ethgasOrderData = {
-      blockRange: data.blockRange,
-      price: data.price,
-      side: data.side,
-      quantity: data.quantity,
-    }
-
     let ethgasOrderId: string | null = null
     let ethgasOrder: any = null
+
+    // Generate Client Order ID & Parse Data
+    const clientOrderId = Math.random().toString(36).substring(2, 10)
+    const instrumentId = data.instrumentId
+    const sideBool = data.side === 'buy'
 
     try {
       // Set auth token for ETHGas API
       ethgasClient.setAuthToken(ethgasToken)
 
-      // Place order in ETHGas
-      if (data.marketType === 'wholeblock') {
-        ethgasOrder = await ethgasClient.placeWholeBlockOrder(ethgasOrderData)
-      } else {
-        ethgasOrder = await ethgasClient.placeInclusionPreconfOrder(ethgasOrderData)
+      // 1. Fetch User Accounts to get accountId
+      const accountsResponse = await ethgasClient.getUserAccounts()
+      // Handle various response structures (data.data.accounts, data.accounts, etc.)
+      const accounts = accountsResponse?.data?.data?.user?.accounts ||
+        accountsResponse?.data?.user?.accounts ||
+        accountsResponse?.data?.accounts ||
+        accountsResponse?.accounts ||
+        []
+
+      // Find trading account (Type 2) or fallback to first one
+      const tradingAccount = accounts.find((acc: any) => acc.type === 2) || accounts[0]
+
+      if (!tradingAccount) {
+        throw new AppError(400, 'No ETHGas trading account found for this user')
       }
 
-      ethgasOrderId = ethgasOrder.id || ethgasOrder.orderId || null
+      const accountId = tradingAccount.accountId
+      console.log('🟣 [Backend] Using Account ID for order:', accountId)
+
+
+      // 5. Construct Payload
+      // 5. Construct Payload & Place Order
+      if (data.marketType === 'wholeblock') {
+        const wbPayload = {
+          instrumentId,
+          accountId,
+          side: sideBool, // Keep boolean for Whole Block as it's tested
+          orderType: 1,
+          quantity: "1",
+          clientOrderId,
+          passive: false
+        }
+        console.log('🔵 [Backend] Placing WB Order:', JSON.stringify(wbPayload, null, 2))
+        ethgasOrder = await ethgasClient.placeWholeBlockOrder(wbPayload)
+
+      } else {
+        // Inclusion Preconf - strict types based on docs
+        const pcPayload = {
+          instrumentId,
+          accountId,
+          side: sideBool ? 1 : 0, // Integer 1 or 0
+          orderType: 1,
+          quantity: Number(data.quantity || 1), // Integer
+          clientOrderId,
+          passive: false
+        }
+        console.log('🔵 [Backend] Placing Preconf Order:', JSON.stringify(pcPayload, null, 2))
+        ethgasOrder = await ethgasClient.placeInclusionPreconfOrder(pcPayload)
+      }
+
+      // Handle response wrapping
+      const orderData = ethgasOrder?.data?.order || ethgasOrder?.order || ethgasOrder?.data || ethgasOrder
+      ethgasOrderId = orderData?.orderId || null
+
+      console.log('✅ [Backend] Order Placed. ID:', ethgasOrderId)
 
       ethgasClient.clearAuthToken()
     } catch (error: any) {
       ethgasClient.clearAuthToken()
-      throw new AppError(400, `Failed to place order in ETHGas: ${error.message}`)
+      console.error('❌ [Backend] Order Placement Failed:', error.response?.data || error.message)
+      throw new AppError(400, error.message)
     }
 
     // Store normalized order in MongoDB
@@ -59,10 +104,11 @@ export class OrdersService {
       ethgasOrderId,
       marketType: data.marketType,
       side: data.side,
-      blockRange: data.blockRange,
+      instrumentId: data.instrumentId,
+      clientOrderId,
       price: data.price,
       quantity: data.quantity,
-      status: 'pending',
+      status: 'pending', // Initially pending until confirmed/synced
     })
 
     return order
@@ -162,13 +208,10 @@ export class OrdersService {
           }
 
           // Use marketType from order if available, otherwise use extracted value
-          const finalMarketType = ethgasOrder.marketType || 
-            (ethgasOrder.type === 'wholeblock' ? 'wholeblock' : 
-             ethgasOrder.type === 'inclusion-preconf' ? 'inclusion-preconf' : 
-             marketType)
-
-          // Build blockRange from slot (ETHGas doesn't provide blockRange, only slot via instrumentId)
-          const blockRange = ethgasOrder.blockRange || (slot > 0 ? { start: slot, end: slot } : { start: 0, end: 0 })
+          const finalMarketType = ethgasOrder.marketType ||
+            (ethgasOrder.type === 'wholeblock' ? 'wholeblock' :
+              ethgasOrder.type === 'inclusion-preconf' ? 'inclusion-preconf' :
+                marketType)
 
           // Build update object
           // For upsert to work, we need all required fields, so we'll use defaults if missing
@@ -177,7 +220,8 @@ export class OrdersService {
             ethgasOrderId: ethgasOrder.id || ethgasOrder.orderId,
             marketType: finalMarketType,
             side: this.mapETHGasSide(ethgasOrder.side), // Map boolean to string
-            blockRange: blockRange,
+            // blockRange removed
+            instrumentId: ethgasOrder.instrumentId || (finalMarketType === 'wholeblock' ? `ETH-WB-${slot}` : `ETH-PC-${slot}`), // Ensure instrumentId exists
             price: ethgasOrder.price || '0', // Default if missing
             status: this.mapETHGasStatus(ethgasOrder.status), // Map integer to string
           }
@@ -197,22 +241,19 @@ export class OrdersService {
 
           // Try to find existing order first
           const existingOrder = await Order.findOne({ ethgasOrderId: ethgasOrder.id || ethgasOrder.orderId })
-          
+
           if (existingOrder) {
             // Update existing order - only update fields that exist in ETHGas response
             const updateFields: any = {
               status: updateData.status,
               filledQuantity: updateData.filledQuantity,
             }
-            
+
             if (ethgasOrder.side !== undefined && ethgasOrder.side !== null) {
               updateFields.side = this.mapETHGasSide(ethgasOrder.side)
             }
-            // Update blockRange if we extracted slot from instrumentId or if provided
-            if (blockRange.start > 0 || blockRange.end > 0) {
-              updateFields.blockRange = blockRange
-            } else if (ethgasOrder.blockRange) {
-              updateFields.blockRange = ethgasOrder.blockRange
+            if (ethgasOrder.instrumentId) {
+              updateFields.instrumentId = ethgasOrder.instrumentId
             }
             if (ethgasOrder.price) updateFields.price = String(ethgasOrder.price)
             if (finalMarketType) {
@@ -221,7 +262,7 @@ export class OrdersService {
             if (ethgasOrder.quantity !== undefined && ethgasOrder.quantity !== null) {
               updateFields.quantity = String(ethgasOrder.quantity)
             }
-            
+
             await Order.findByIdAndUpdate(existingOrder._id, updateFields)
           } else {
             // Create new order - use defaults for required fields if missing
@@ -254,6 +295,8 @@ export class OrdersService {
    */
   async cancelOrder(userId: string, orderId: string): Promise<IOrder> {
     const order = await Order.findById(orderId)
+    console.log('🟠 [Backend] Cancel Order Request:', { orderId, userId })
+    console.log('🟠 [Backend] Found Order:', order)
 
     if (!order) {
       throw new AppError(404, 'Order not found')
@@ -276,17 +319,39 @@ export class OrdersService {
     try {
       ethgasClient.setAuthToken(ethgasToken)
 
+      // 1. Fetch User Accounts to get accountId (Required for cancel)
+      const accountsResponse = await ethgasClient.getUserAccounts()
+      const accounts = accountsResponse?.data?.data?.user?.accounts ||
+        accountsResponse?.data?.user?.accounts ||
+        accountsResponse?.data?.accounts ||
+        accountsResponse?.accounts ||
+        []
+      const tradingAccount = accounts.find((acc: any) => acc.type === 2) || accounts[0]
+      if (!tradingAccount) {
+        throw new AppError(400, 'No ETHGas trading account found for this user')
+      }
+      const accountId = tradingAccount.accountId
+
+      const cancelPayload = {
+        accountId,
+        instrumentId: order.instrumentId,
+        clientOrderId: order.clientOrderId,
+        orderId: order.ethgasOrderId
+      }
+
+      console.log('🔵 [Backend] Cancelling Order:', JSON.stringify(cancelPayload, null, 2))
+
       // Cancel in ETHGas
       if (order.marketType === 'wholeblock') {
-        await ethgasClient.cancelWholeBlockOrder(order.ethgasOrderId)
+        await ethgasClient.cancelWholeBlockOrder(cancelPayload)
       } else {
-        await ethgasClient.cancelInclusionPreconfOrder(order.ethgasOrderId)
+        await ethgasClient.cancelInclusionPreconfOrder(cancelPayload)
       }
 
       ethgasClient.clearAuthToken()
     } catch (error: any) {
       ethgasClient.clearAuthToken()
-      throw new AppError(400, `Failed to cancel order in ETHGas: ${error.message}`)
+      throw new AppError(400, `Failed to cancel order in ETHGas: ${error.response?.data?.message || error.message}`)
     }
 
     // Update in MongoDB

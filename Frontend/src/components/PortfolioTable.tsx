@@ -40,7 +40,7 @@ export default function PortfolioTable({ orders, onCancel }: PortfolioTableProps
             <tr className="border-b border-[#1E1E22]">
               <th className="text-left py-4 px-6 text-sm font-semibold text-[#C9CCD3]">Market</th>
               <th className="text-left py-4 px-6 text-sm font-semibold text-[#C9CCD3]">Side</th>
-              <th className="text-left py-4 px-6 text-sm font-semibold text-[#C9CCD3]">Block Range</th>
+              <th className="text-left py-4 px-6 text-sm font-semibold text-[#C9CCD3]">Instrument ID</th>
               <th className="text-left py-4 px-6 text-sm font-semibold text-[#C9CCD3]">Price</th>
               <th className="text-left py-4 px-6 text-sm font-semibold text-[#C9CCD3]">Status</th>
               <th className="text-left py-4 px-6 text-sm font-semibold text-[#C9CCD3]">Date</th>
@@ -62,7 +62,7 @@ export default function PortfolioTable({ orders, onCancel }: PortfolioTableProps
                   </span>
                 </td>
                 <td className="py-4 px-6 text-[#F5F6FA] font-mono text-sm">
-                  {order.blockRange?.start || order.start || '—'} - {order.blockRange?.end || order.end || '—'}
+                  {order.instrumentId || '—'}
                 </td>
                 <td className="py-4 px-6 text-[#F5F6FA] font-medium">
                   {order.price ? `${order.price} ETH` : '—'}

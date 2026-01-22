@@ -20,27 +20,29 @@ export const errorHandler = (
 ): void => {
   // Zod validation errors
   if (err instanceof ZodError) {
-    return res.status(400).json({
+    res.status(400).json({
       error: 'Validation error',
       details: err.errors.map((e) => ({
         path: e.path.join('.'),
         message: e.message,
       })),
     })
+    return
   }
 
   // Custom application errors
   if (err instanceof AppError) {
-    return res.status(err.statusCode).json({
+    res.status(err.statusCode).json({
       error: err.message,
     })
+    return
   }
 
   // Default to 500 server error
   console.error('Unhandled error:', err)
-  return res.status(500).json({
-    error: process.env.NODE_ENV === 'production' 
-      ? 'Internal server error' 
+  res.status(500).json({
+    error: process.env.NODE_ENV === 'production'
+      ? 'Internal server error'
       : err.message,
   })
 }
