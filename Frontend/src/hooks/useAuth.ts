@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
-import { initiateLogin, verifyLogin, loginUser, fetchCurrentUser, logout } from '../store/authSlice'
+import { initiateLogin, verifyLogin, fetchCurrentUser, logout } from '../store/authSlice'
 
 export function useAuth() {
   const dispatch = useAppDispatch()

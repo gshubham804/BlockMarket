@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import authService, { AuthUser, PendingLogin } from '../lib/auth'
 
 interface AuthState {
@@ -42,13 +42,13 @@ export const verifyLogin = createAsyncThunk(
     try {
       const state = getState() as { auth: AuthState }
       const pendingLogin = state.auth.pendingLogin
-      
+
       console.log('🟢 [Frontend] Checking pendingLogin:', {
         exists: !!pendingLogin,
         address: pendingLogin?.address,
         nonceHash: pendingLogin?.nonceHash,
       })
-      
+
       if (!pendingLogin) {
         console.error('❌ [Frontend] No pending login found')
         throw new Error('No pending login found. Please initiate login first.')

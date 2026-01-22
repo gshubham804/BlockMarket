@@ -3,10 +3,10 @@
  * Used ONLY for authentication signatures
  */
 
-import { BrowserProvider } from 'ethers'
-
 export interface WalletProvider {
   request: (args: { method: string; params?: unknown[] }) => Promise<unknown>
+  on: (event: string, callback: (...args: any[]) => void) => void
+  removeListener: (event: string, callback: (...args: any[]) => void) => void
   isMetaMask?: boolean
 }
 
@@ -99,7 +99,7 @@ export const signTypedData = async (
     // Use MetaMask's native eth_signTypedData_v4 method
     // This handles EIP-712 correctly and avoids ethers.js v6 type ambiguity issues
     console.log('🟡 [Frontend] Using MetaMask eth_signTypedData_v4...')
-    
+
     // Prepare the EIP-712 structure for MetaMask
     // MetaMask expects chainId as a number (not hex string)
     const typedData = {
@@ -113,9 +113,9 @@ export const signTypedData = async (
       },
       message: eip712Message.message,
     }
-    
+
     console.log('  TypedData structure:', JSON.stringify(typedData, null, 2))
-    
+
     // MetaMask expects: [address, JSON.stringify(typedData)]
     const signature = await window.ethereum.request({
       method: 'eth_signTypedData_v4',

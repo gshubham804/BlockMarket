@@ -85,15 +85,48 @@ export class OrdersService {
     try {
       ethgasClient.setAuthToken(ethgasToken)
 
+      // First, get user's accounts to find trading account (type 2)
+      let tradingAccountId: number | undefined = undefined
+      try {
+        const accountsResponse = await ethgasClient.getUserAccounts()
+        const accounts = accountsResponse?.data?.accounts || accountsResponse?.accounts || []
+        // Find trading account (type 2) - this is used for orders
+        const tradingAccount = accounts.find((acc: any) => acc.type === 2)
+        if (tradingAccount) {
+          tradingAccountId = tradingAccount.accountId
+          console.log('🟣 [Backend] Found trading account:', tradingAccountId)
+        } else if (accounts.length > 0) {
+          // Fallback to first account if no trading account found
+          tradingAccountId = accounts[0].accountId
+          console.log('🟣 [Backend] Using first account as fallback:', tradingAccountId)
+        }
+      } catch (accountError: any) {
+        console.warn('⚠️ [Backend] Failed to fetch accounts, proceeding without accountId:', accountError.message)
+      }
+
       // Fetch orders from ETHGas
       let ethgasOrders: any[] = []
       if (!marketType || marketType === 'wholeblock') {
-        const wholeBlockOrders = await ethgasClient.getUserWholeBlockOrders()
-        ethgasOrders = ethgasOrders.concat(wholeBlockOrders.orders || wholeBlockOrders || [])
+        try {
+          const wholeBlockOrders = await ethgasClient.getUserWholeBlockOrders(tradingAccountId)
+          // Handle response structure: { success: true, data: { orders: [...] } } or { orders: [...] }
+          const orders = wholeBlockOrders?.data?.orders || wholeBlockOrders?.orders || wholeBlockOrders || []
+          ethgasOrders = ethgasOrders.concat(Array.isArray(orders) ? orders : [])
+          console.log('🟣 [Backend] Fetched whole block orders:', orders.length)
+        } catch (error: any) {
+          console.error('❌ [Backend] Failed to fetch whole block orders:', error.message)
+        }
       }
       if (!marketType || marketType === 'inclusion-preconf') {
-        const preconfOrders = await ethgasClient.getUserInclusionPreconfOrders()
-        ethgasOrders = ethgasOrders.concat(preconfOrders.orders || preconfOrders || [])
+        try {
+          const preconfOrders = await ethgasClient.getUserInclusionPreconfOrders(tradingAccountId)
+          // Handle response structure: { success: true, data: { orders: [...] } } or { orders: [...] }
+          const orders = preconfOrders?.data?.orders || preconfOrders?.orders || preconfOrders || []
+          ethgasOrders = ethgasOrders.concat(Array.isArray(orders) ? orders : [])
+          console.log('🟣 [Backend] Fetched inclusion preconf orders:', orders.length)
+        } catch (error: any) {
+          console.error('❌ [Backend] Failed to fetch inclusion preconf orders:', error.message)
+        }
       }
 
       ethgasClient.clearAuthToken()
@@ -103,29 +136,61 @@ export class OrdersService {
         try {
           console.log('🟣 [Backend] Syncing ETHGas order:', {
             id: ethgasOrder.id || ethgasOrder.orderId,
+            instrumentId: ethgasOrder.instrumentId,
             status: ethgasOrder.status,
+            side: ethgasOrder.side,
             hasStatus: ethgasOrder.status !== undefined && ethgasOrder.status !== null,
             orderKeys: Object.keys(ethgasOrder),
           })
+
+          // Extract market type and slot from instrumentId if available
+          // Format: "ETH-WB-{slot}" for whole block, "ETH-PC-{slot}" for inclusion preconf
+          let marketType: 'wholeblock' | 'inclusion-preconf' = 'inclusion-preconf'
+          let slot: number = 0
+
+          if (ethgasOrder.instrumentId) {
+            const instrumentId = ethgasOrder.instrumentId as string
+            if (instrumentId.includes('ETH-WB-')) {
+              marketType = 'wholeblock'
+              const slotMatch = instrumentId.match(/ETH-WB-(\d+)/)
+              if (slotMatch) slot = parseInt(slotMatch[1], 10)
+            } else if (instrumentId.includes('ETH-PC-')) {
+              marketType = 'inclusion-preconf'
+              const slotMatch = instrumentId.match(/ETH-PC-(\d+)/)
+              if (slotMatch) slot = parseInt(slotMatch[1], 10)
+            }
+          }
+
+          // Use marketType from order if available, otherwise use extracted value
+          const finalMarketType = ethgasOrder.marketType || 
+            (ethgasOrder.type === 'wholeblock' ? 'wholeblock' : 
+             ethgasOrder.type === 'inclusion-preconf' ? 'inclusion-preconf' : 
+             marketType)
+
+          // Build blockRange from slot (ETHGas doesn't provide blockRange, only slot via instrumentId)
+          const blockRange = ethgasOrder.blockRange || (slot > 0 ? { start: slot, end: slot } : { start: 0, end: 0 })
 
           // Build update object
           // For upsert to work, we need all required fields, so we'll use defaults if missing
           const updateData: any = {
             userId: new mongoose.Types.ObjectId(userId),
             ethgasOrderId: ethgasOrder.id || ethgasOrder.orderId,
-            marketType: ethgasOrder.marketType || (ethgasOrder.type === 'wholeblock' ? 'wholeblock' : 'inclusion-preconf'),
-            side: ethgasOrder.side || 'buy', // Default to 'buy' if missing
-            blockRange: ethgasOrder.blockRange || { start: 0, end: 0 }, // Default if missing
+            marketType: finalMarketType,
+            side: this.mapETHGasSide(ethgasOrder.side), // Map boolean to string
+            blockRange: blockRange,
             price: ethgasOrder.price || '0', // Default if missing
-            status: this.mapETHGasStatus(ethgasOrder.status),
+            status: this.mapETHGasStatus(ethgasOrder.status), // Map integer to string
           }
 
           // Optional fields
           if (ethgasOrder.quantity !== undefined && ethgasOrder.quantity !== null) {
-            updateData.quantity = ethgasOrder.quantity
+            updateData.quantity = String(ethgasOrder.quantity)
           }
-          if (ethgasOrder.filledQuantity !== undefined && ethgasOrder.filledQuantity !== null) {
-            updateData.filledQuantity = ethgasOrder.filledQuantity
+          // ETHGas uses 'fulfilled' field for filled quantity
+          if (ethgasOrder.fulfilled !== undefined && ethgasOrder.fulfilled !== null) {
+            updateData.filledQuantity = String(ethgasOrder.fulfilled)
+          } else if (ethgasOrder.filledQuantity !== undefined && ethgasOrder.filledQuantity !== null) {
+            updateData.filledQuantity = String(ethgasOrder.filledQuantity)
           } else {
             updateData.filledQuantity = '0'
           }
@@ -140,11 +205,21 @@ export class OrdersService {
               filledQuantity: updateData.filledQuantity,
             }
             
-            if (ethgasOrder.side) updateFields.side = ethgasOrder.side
-            if (ethgasOrder.blockRange) updateFields.blockRange = ethgasOrder.blockRange
-            if (ethgasOrder.price) updateFields.price = ethgasOrder.price
-            if (ethgasOrder.marketType || ethgasOrder.type) {
-              updateFields.marketType = updateData.marketType
+            if (ethgasOrder.side !== undefined && ethgasOrder.side !== null) {
+              updateFields.side = this.mapETHGasSide(ethgasOrder.side)
+            }
+            // Update blockRange if we extracted slot from instrumentId or if provided
+            if (blockRange.start > 0 || blockRange.end > 0) {
+              updateFields.blockRange = blockRange
+            } else if (ethgasOrder.blockRange) {
+              updateFields.blockRange = ethgasOrder.blockRange
+            }
+            if (ethgasOrder.price) updateFields.price = String(ethgasOrder.price)
+            if (finalMarketType) {
+              updateFields.marketType = finalMarketType
+            }
+            if (ethgasOrder.quantity !== undefined && ethgasOrder.quantity !== null) {
+              updateFields.quantity = String(ethgasOrder.quantity)
             }
             
             await Order.findByIdAndUpdate(existingOrder._id, updateFields)
@@ -222,28 +297,75 @@ export class OrdersService {
   }
 
   /**
-   * Map ETHGas order status to our status enum
+   * Map ETHGas order status (integer) to our status enum (string)
+   * ETHGas Status Codes:
+   * 0 = STATUS_PENDING (Pending - Not yet sent to market)
+   * 1 = STATUS_ONBOOK (On Book - Live order in market)
+   * 10 = STATUS_DONE (Done - Fully executed)
+   * 11 = STATUS_MANUALLY_CANCELLED (Manually cancelled)
+   * 12 = STATUS_AUTO_CANCELLED (Auto cancelled)
+   * 13 = STATUS_PARTIALLY_FILLED (Partially Filled)
+   * 14 = STATUS_EXPIRED (Market expired)
+   * 99 = STATUS_ERROR (Error)
    */
-  private mapETHGasStatus(ethgasStatus: string | undefined | null): OrderStatus {
+  private mapETHGasStatus(ethgasStatus: number | string | undefined | null): OrderStatus {
     // Handle undefined/null status
-    if (!ethgasStatus) {
+    if (ethgasStatus === undefined || ethgasStatus === null) {
       console.warn('⚠️ [Backend] ETHGas order status is missing, defaulting to "pending"')
       return 'pending'
     }
 
-    const statusMap: Record<string, OrderStatus> = {
-      pending: 'pending',
-      active: 'active',
-      filled: 'filled',
-      cancelled: 'cancelled',
-      expired: 'expired',
+    // Convert to number if it's a string
+    const statusCode = typeof ethgasStatus === 'string' ? parseInt(ethgasStatus, 10) : ethgasStatus
+
+    // Map ETHGas integer status codes to our string statuses
+    const statusMap: Record<number, OrderStatus> = {
+      0: 'pending',      // STATUS_PENDING
+      1: 'active',       // STATUS_ONBOOK (active/live order)
+      10: 'filled',      // STATUS_DONE (fully executed)
+      11: 'cancelled',   // STATUS_MANUALLY_CANCELLED
+      12: 'cancelled',   // STATUS_AUTO_CANCELLED
+      13: 'active',      // STATUS_PARTIALLY_FILLED (still active)
+      14: 'expired',     // STATUS_EXPIRED
+      99: 'pending',     // STATUS_ERROR (treat as pending for now)
     }
-    
-    const normalizedStatus = typeof ethgasStatus === 'string' 
-      ? ethgasStatus.toLowerCase() 
-      : String(ethgasStatus).toLowerCase()
-    
-    return statusMap[normalizedStatus] || 'pending'
+
+    if (isNaN(statusCode)) {
+      console.warn(`⚠️ [Backend] Invalid ETHGas status value: ${ethgasStatus}, defaulting to "pending"`)
+      return 'pending'
+    }
+
+    return statusMap[statusCode] || 'pending'
+  }
+
+  /**
+   * Map ETHGas side (boolean) to our side enum (string)
+   * ETHGas: true = Buy, false = Sell
+   */
+  private mapETHGasSide(ethgasSide: boolean | string | undefined | null): 'buy' | 'sell' {
+    if (ethgasSide === undefined || ethgasSide === null) {
+      console.warn('⚠️ [Backend] ETHGas order side is missing, defaulting to "buy"')
+      return 'buy'
+    }
+
+    // Handle boolean
+    if (typeof ethgasSide === 'boolean') {
+      return ethgasSide ? 'buy' : 'sell'
+    }
+
+    // Handle string (for backward compatibility)
+    if (typeof ethgasSide === 'string') {
+      const normalized = ethgasSide.toLowerCase()
+      if (normalized === 'true' || normalized === 'buy' || normalized === '1') {
+        return 'buy'
+      }
+      if (normalized === 'false' || normalized === 'sell' || normalized === '0') {
+        return 'sell'
+      }
+    }
+
+    console.warn(`⚠️ [Backend] Invalid ETHGas side value: ${ethgasSide}, defaulting to "buy"`)
+    return 'buy'
   }
 }
 

@@ -6,7 +6,7 @@ import authReducer from './authSlice'
 const authPersistConfig = {
   key: 'auth',
   storage,
-  whitelist: ['user'], // Only persist user, not loading/error states
+  whitelist: ['user', 'pendingLogin'], // Persist user and pendingLogin state
 }
 
 const persistedAuthReducer = persistReducer(authPersistConfig, authReducer)

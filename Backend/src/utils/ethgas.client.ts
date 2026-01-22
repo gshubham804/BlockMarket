@@ -288,17 +288,46 @@ class ETHGasClient {
   }
 
   /**
-   * GET /api/v1/user/wholeblock/orders
-   * Get user's whole block orders (requires auth token)
+   * GET /api/v1/user/accounts
+   * Get user's accounts (requires auth token)
    */
-  async getUserWholeBlockOrders(): Promise<any> {
+  async getUserAccounts(): Promise<any> {
     console.log('🔵 ETHGas API Request:')
     console.log('  Method: GET')
-    console.log('  URL:', `${this.baseURL}/api/v1/user/wholeblock/orders`)
+    console.log('  URL:', `${this.baseURL}/api/v1/user/accounts`)
     console.log('  Headers:', { Authorization: 'Bearer ***REDACTED***' })
     
     try {
-      const response = await this.client.get('/api/v1/user/wholeblock/orders')
+      const response = await this.client.get('/api/v1/user/accounts')
+      console.log('✅ ETHGas API Response:')
+      console.log('  Status:', response.status)
+      console.log('  Data keys:', Object.keys(response.data || {}))
+      console.log('  Data preview:', JSON.stringify(response.data, null, 2).slice(0, 500) + '...')
+      return response.data
+    } catch (error: any) {
+      console.error('❌ ETHGas API Error:')
+      console.error('  Status:', error.response?.status)
+      console.error('  Error:', error.response?.data || error.message)
+      throw new Error(`ETHGas get user accounts failed: ${error.response?.data?.message || error.message}`)
+    }
+  }
+
+  /**
+   * GET /api/v1/user/wholeblock/orders
+   * Get user's whole block orders (requires auth token and accountId)
+   */
+  async getUserWholeBlockOrders(accountId?: number): Promise<any> {
+    const params = accountId ? { accountId } : {}
+    const queryString = accountId ? `?accountId=${accountId}` : ''
+    
+    console.log('🔵 ETHGas API Request:')
+    console.log('  Method: GET')
+    console.log('  URL:', `${this.baseURL}/api/v1/user/wholeblock/orders${queryString}`)
+    console.log('  Query Params:', params)
+    console.log('  Headers:', { Authorization: 'Bearer ***REDACTED***' })
+    
+    try {
+      const response = await this.client.get(`/api/v1/user/wholeblock/orders${queryString}`)
       console.log('✅ ETHGas API Response:')
       console.log('  Status:', response.status)
       console.log('  Data keys:', Object.keys(response.data || {}))
@@ -314,16 +343,20 @@ class ETHGasClient {
 
   /**
    * GET /api/v1/user/inclusion-preconf/orders
-   * Get user's inclusion preconf orders (requires auth token)
+   * Get user's inclusion preconf orders (requires auth token and accountId)
    */
-  async getUserInclusionPreconfOrders(): Promise<any> {
+  async getUserInclusionPreconfOrders(accountId?: number): Promise<any> {
+    const params = accountId ? { accountId } : {}
+    const queryString = accountId ? `?accountId=${accountId}` : ''
+    
     console.log('🔵 ETHGas API Request:')
     console.log('  Method: GET')
-    console.log('  URL:', `${this.baseURL}/api/v1/user/inclusion-preconf/orders`)
+    console.log('  URL:', `${this.baseURL}/api/v1/user/inclusion-preconf/orders${queryString}`)
+    console.log('  Query Params:', params)
     console.log('  Headers:', { Authorization: 'Bearer ***REDACTED***' })
     
     try {
-      const response = await this.client.get('/api/v1/user/inclusion-preconf/orders')
+      const response = await this.client.get(`/api/v1/user/inclusion-preconf/orders${queryString}`)
       console.log('✅ ETHGas API Response:')
       console.log('  Status:', response.status)
       console.log('  Data keys:', Object.keys(response.data || {}))

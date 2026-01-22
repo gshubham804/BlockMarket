@@ -4,7 +4,8 @@
  * All API calls go through our backend - never directly to ETHGas
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+// const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://blockmarket.onrender.com'
 
 class ApiClient {
   private baseURL: string
@@ -18,7 +19,7 @@ class ApiClient {
     options: RequestInit = {}
   ): Promise<T> {
     const token = localStorage.getItem('auth_token')
-    
+
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
       ...(token && { Authorization: `Bearer ${token}` }),
@@ -43,7 +44,7 @@ class ApiClient {
         console.error('❌ [Frontend] API request failed')
         console.error('  Status:', response.status)
         console.error('  Error response:', errorText)
-        
+
         let error
         try {
           error = JSON.parse(errorText)
@@ -70,7 +71,7 @@ class ApiClient {
     console.log('  Request body:', { address })
 
     try {
-      const response = await this.request<{ 
+      const response = await this.request<{
         eip712Message: {
           types: {
             EIP712Domain: Array<{ name: string; type: string }>
