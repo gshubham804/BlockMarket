@@ -36,7 +36,7 @@ export default function LoginPage() {
         <div className="bg-[#131316] rounded-lg border border-[#1E1E22] shadow-card p-8 text-center space-y-6">
           <div className="flex justify-center">
             <img 
-              src="/assets/BlockMarketLogo.png" 
+              src="/BlockMarketLogo.png" 
               alt="BlockMarket" 
               className="h-16 w-16"
             />

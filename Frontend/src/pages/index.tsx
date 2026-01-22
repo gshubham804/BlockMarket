@@ -9,7 +9,7 @@ function LandingPage() {
         <div className="max-w-7xl mx-auto py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-0">
             <img 
-              src="/assets/BlockMarketLogo.png" 
+              src="/BlockMarketLogo.png" 
               alt="BlockMarket" 
               className="h-12 w-12"
             />
@@ -30,7 +30,7 @@ function LandingPage() {
           <div className="text-center max-w-4xl mx-auto">
             <div className="flex justify-center mb-8">
               <img 
-                src="/assets/BlockMarketLogo.png" 
+                src="/BlockMarketLogo.png" 
                 alt="BlockMarket Logo" 
                 className="h-auto w-60"
               />
@@ -288,7 +288,7 @@ function LandingPage() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <Link to="/" className="flex items-center gap-0">
               <img 
-                src="/assets/BlockMarketLogo.png" 
+                src="/BlockMarketLogo.png" 
                 alt="BlockMarket" 
                 className="h-12 w-12"
               />
