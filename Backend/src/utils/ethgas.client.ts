@@ -11,7 +11,7 @@ import { ETHGasLoginResponse, ETHGasVerifyLoginResponse } from '../types/ethgas'
  */
 class ETHGasClient {
   private client: AxiosInstance
-  private baseURL = 'https://hoodi.app.ethgas.com'
+  private baseURL = 'https://mainnet.app.ethgas.com'
 
   constructor() {
     this.client = axios.create({
