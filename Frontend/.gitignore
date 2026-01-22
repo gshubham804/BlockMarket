@@ -15,8 +15,6 @@ dist-ssr
 # pnpm
 .pnpm-store
 
-# Assets (moved to public/assets)
-BlockMarketLogo.png
 # Allow logo in assets folder for README
 !assets/BlockMarketLogo.png
 
