@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import WalletConnect from '../components/WalletConnect'
+import logo from '../assets/BlockMarketLogo.png'
 
 function LandingPage() {
   return (
@@ -8,9 +9,9 @@ function LandingPage() {
       <nav className="border-b border-[#1E1E22] bg-[#0B0B0D]">
         <div className="max-w-7xl mx-auto py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-0">
-            <img 
-              src="/BlockMarketLogo.png" 
-              alt="BlockMarket" 
+            <img
+              src={logo}
+              alt="BlockMarket"
               className="h-12 w-12"
             />
             <span className="text-xl font-bold text-[#F5F6FA]">BlockMarket</span>
@@ -29,9 +30,9 @@ function LandingPage() {
         <div className="max-w-7xl mx-auto px-6 py-20 lg:py-32">
           <div className="text-center max-w-4xl mx-auto">
             <div className="flex justify-center mb-8">
-              <img 
-                src="/BlockMarketLogo.png" 
-                alt="BlockMarket Logo" 
+              <img
+                src={logo}
+                alt="BlockMarket Logo"
                 className="h-auto w-60"
               />
             </div>
@@ -40,7 +41,7 @@ function LandingPage() {
               <span className="text-[#E10600]"> Product</span>
             </h1>
             <p className="text-xl lg:text-2xl text-[#C9CCD3] mb-8 leading-relaxed">
-              Gasless transactions meet blockspace marketplace. 
+              Gasless transactions meet blockspace marketplace.
               <br />
               Reserve Ethereum blockspace in advance, execute transactions without gas complexity.
             </p>
@@ -79,7 +80,7 @@ function LandingPage() {
                 { title: "Unpredictable", desc: "Congestion causes sudden fee spikes" },
                 { title: "Complex UX", desc: "Too technical for non-technical users" }
               ].map((item, idx) => (
-                <div 
+                <div
                   key={idx}
                   className="p-6 bg-[#0B0B0D] rounded-lg border border-[#1E1E22] shadow-card"
                 >
@@ -103,7 +104,7 @@ function LandingPage() {
               BlockMarket treats Ethereum <span className="text-[#E10600] font-semibold">blockspace as a reservable resource</span>, not a last-second auction.
             </p>
           </div>
-          
+
           <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
             <div className="p-8 bg-[#131316] rounded-lg border border-[#1E1E22] shadow-card">
               <div className="w-12 h-12 bg-[#E10600]/20 rounded-lg flex items-center justify-center mb-4">
@@ -244,7 +245,7 @@ function LandingPage() {
               { icon: "📈", title: "Predictable", desc: "Clear execution timeline from submission to inclusion" },
               { icon: "⚙️", title: "Separation", desc: "Clear separation between reservation and execution" }
             ].map((feature, idx) => (
-              <div 
+              <div
                 key={idx}
                 className="p-6 bg-[#131316] rounded-lg border border-[#1E1E22] shadow-card text-center"
               >
@@ -287,9 +288,9 @@ function LandingPage() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <Link to="/" className="flex items-center gap-0">
-              <img 
-                src="/BlockMarketLogo.png" 
-                alt="BlockMarket" 
+              <img
+                src="/BlockMarketLogo.png"
+                alt="BlockMarket"
                 className="h-12 w-12"
               />
               <span className="text-[#F5F6FA] text-lg font-semibold">BlockMarket</span>

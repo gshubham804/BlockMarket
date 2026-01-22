@@ -4,6 +4,7 @@ import Layout from '../components/Layout'
 import { useAuth } from '../hooks/useAuth'
 import { formatAddress } from '../lib/wallet'
 import toast from 'react-hot-toast'
+import logo from '../assets/BlockMarketLogo.png'
 
 export default function LoginPage() {
   const { user, pendingLogin, login, verify, loading, verifying, error } = useAuth()
@@ -35,9 +36,9 @@ export default function LoginPage() {
       <div className="max-w-md mx-auto">
         <div className="bg-[#131316] rounded-lg border border-[#1E1E22] shadow-card p-8 text-center space-y-6">
           <div className="flex justify-center">
-            <img 
-              src="/BlockMarketLogo.png" 
-              alt="BlockMarket" 
+            <img
+              src={logo}
+              alt="BlockMarket"
               className="h-16 w-16"
             />
           </div>

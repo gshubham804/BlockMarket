@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import WalletConnect from '../components/WalletConnect'
+import logo from '../assets/BlockMarketLogo.png'
 
 function TradePage() {
   return (
@@ -8,9 +9,9 @@ function TradePage() {
       <nav className="border-b border-[#1E1E22] bg-[#0B0B0D]">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-0">
-            <img 
-              src="/BlockMarketLogo.png" 
-              alt="BlockMarket" 
+            <img
+              src={logo}
+              alt="BlockMarket"
               className="h-12 w-12"
             />
             <span className="text-xl font-bold text-[#F5F6FA]">BlockMarket</span>
@@ -71,11 +72,10 @@ function TradePage() {
                     <td className="py-4 px-4 text-[#F5F6FA]">{item.range}</td>
                     <td className="py-4 px-4 text-[#C9CCD3]">{item.price}</td>
                     <td className="py-4 px-4">
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${
-                        item.status === 'Available' 
-                          ? 'bg-[#E10600]/20 text-[#E10600]' 
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${item.status === 'Available'
+                          ? 'bg-[#E10600]/20 text-[#E10600]'
                           : 'bg-[#6B6F78]/20 text-[#6B6F78]'
-                      }`}>
+                        }`}>
                         {item.status}
                       </span>
                     </td>
