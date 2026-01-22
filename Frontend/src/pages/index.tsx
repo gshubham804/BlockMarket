@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import WalletConnect from '../components/WalletConnect'
-import logo from '../assets/BlockMarketLogo.png'
+import logo from '../assets/blockMarketLogo.png'
 
 function LandingPage() {
   return (

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { formatAddress } from '../lib/wallet'
-import logo from '../assets/BlockMarketLogo.png'
+import logo from '../assets/blockMarketLogo.png'
 
 export default function Navbar() {
   const { user, pendingLogin, login, verify, logout, loading, verifying } = useAuth()

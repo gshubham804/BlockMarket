@@ -4,7 +4,7 @@ import Layout from '../components/Layout'
 import { useAuth } from '../hooks/useAuth'
 import { formatAddress } from '../lib/wallet'
 import toast from 'react-hot-toast'
-import logo from '../assets/BlockMarketLogo.png'
+import logo from '../assets/blockMarketLogo.png'
 
 export default function LoginPage() {
   const { user, pendingLogin, login, verify, loading, verifying, error } = useAuth()
